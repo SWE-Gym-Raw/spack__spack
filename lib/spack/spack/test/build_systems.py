@@ -15,6 +15,7 @@ import llnl.util.filesystem as fs
 import spack.build_systems.autotools
 import spack.build_systems.cmake
 import spack.builder
+import spack.concretize
 import spack.environment
 import spack.error
 import spack.paths
@@ -144,7 +145,7 @@ class TestAutotoolsPackage:
 
     def test_libtool_archive_files_are_deleted_by_default(self, mutable_database):
         # Install a package that creates a mock libtool archive
-        s = Spec("libtool-deletion").concretized()
+        s = spack.concretize.concretized(Spec("libtool-deletion"))
         PackageInstaller([s.package], explicit=True).install()
 
         # Assert the libtool archive is not there and we have
@@ -159,7 +160,7 @@ class TestAutotoolsPackage:
     ):
         # Install a package that creates a mock libtool archive,
         # patch its package to preserve the installation
-        s = Spec("libtool-deletion").concretized()
+        s = spack.concretize.concretized(Spec("libtool-deletion"))
         monkeypatch.setattr(
             type(spack.builder.create(s.package)), "install_libtool_archives", True
         )
@@ -173,7 +174,9 @@ class TestAutotoolsPackage:
         Tests whether only broken config.sub and config.guess are replaced with
         files from working alternatives from the gnuconfig package.
         """
-        s = Spec("autotools-config-replacement +patch_config_files +gnuconfig").concretized()
+        s = spack.concretize.concretized(
+            Spec("autotools-config-replacement +patch_config_files +gnuconfig")
+        )
         PackageInstaller([s.package]).install()
 
         with open(os.path.join(s.prefix.broken, "config.sub"), encoding="utf-8") as f:
@@ -192,7 +195,9 @@ class TestAutotoolsPackage:
         """
         Tests whether disabling patch_config_files
         """
-        s = Spec("autotools-config-replacement ~patch_config_files +gnuconfig").concretized()
+        s = spack.concretize.concretized(
+            Spec("autotools-config-replacement ~patch_config_files +gnuconfig")
+        )
         PackageInstaller([s.package]).install()
 
         with open(os.path.join(s.prefix.broken, "config.sub"), encoding="utf-8") as f:
@@ -217,8 +222,9 @@ class TestAutotoolsPackage:
         enabled, but gnuconfig is not listed as a direct build dependency.
         """
         monkeypatch.setattr(spack.platforms.test.Test, "default", "x86_64")
-        s = Spec("autotools-config-replacement +patch_config_files ~gnuconfig")
-        s.concretize()
+        s = spack.concretize.concretized(
+            Spec("autotools-config-replacement +patch_config_files ~gnuconfig")
+        )
 
         msg = "Cannot patch config files: missing dependencies: gnuconfig"
         with pytest.raises(ChildError, match=msg):
@@ -298,7 +304,7 @@ class TestCMakePackage:
         assert define("SINGLE", "red") == "-DSINGLE:STRING=red"
 
     def test_define_from_variant(self):
-        s = Spec("cmake-client multi=up,right ~truthy single=red").concretized()
+        s = spack.concretize.concretized(Spec("cmake-client multi=up,right ~truthy single=red"))
 
         arg = s.package.define_from_variant("MULTI")
         assert arg == "-DMULTI:STRING=right;up"
