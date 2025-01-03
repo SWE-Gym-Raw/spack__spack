@@ -259,7 +259,7 @@ def traverse_depth_first_edges_generator(edges, visitor, post_order=False, root=
 
 
 def traverse_breadth_first_edges_generator(queue: deque, visitor, root=True, depth=False):
-    while len(queue) > 0:
+    while queue:
         edge = queue.popleft()
 
         # If the visitor doesn't accept the node, we don't yield it nor follow its edges.
