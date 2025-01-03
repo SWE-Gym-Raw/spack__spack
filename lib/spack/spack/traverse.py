@@ -282,7 +282,7 @@ def traverse_breadth_first_with_visitor(specs, visitor):
             for example BaseVisitor.
     """
     queue = with_artificial_edges(specs)
-    while len(queue) > 0:
+    while queue:
         edge = queue.popleft()
 
         # If the visitor doesn't accept the node, we don't traverse it further.
