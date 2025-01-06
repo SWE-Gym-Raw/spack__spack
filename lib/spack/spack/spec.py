@@ -1896,7 +1896,7 @@ class Spec:
             stacklevel=2,
         )
 
-        self._dup(concretized(tests=tests))
+        self._dup(concretized(self, tests))
 
     def concretized(self, tests: Union[bool, Iterable[str]] = False) -> "Spec":
         from spack.concretize import concretized
@@ -1908,7 +1908,7 @@ class Spec:
             stacklevel=2,
         )
 
-        return concretized(self)
+        return concretized(self, tests)
 
     @property
     def spliced(self):
